@@ -102,8 +102,24 @@ def yolo2coco(imagefolder):
     annotations = []
     images = []
     
-    for kpt_img in glob.glob(imagefolder + )
+    for kpt_img in glob.glob(imagefolder + "*.jpg") + glob.glob(imagefolder + "*.png"):
+        open_kpt_img = Image.open(kpt_img).convert("RGB")
+        img_width, img_height = open_kpt_img.size
+        
+        # image
+        file_name = os.path.basename(kpt_img)
+        image = create_images_format(file_name, img_width, img_height, image_id)
+        images.append(image)
+        
+        # label
+        # labelfile = kpt_img.replace("images", "labels").rsplit('.', 1)[0] + ".txt"
+        # data = parse_labels(labelfile, img_width, img_height)
+        # for i,obj in enumerate(data):
+        image_id += 1
 
+    print(images)
+
+yolo2coco('/Users/thanhhuyen/Dev/yolo2json/dataset_kpt/images/')
         
         
             
