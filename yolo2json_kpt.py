@@ -2,6 +2,7 @@ import os
 import json
 import numpy as np
 from PIL import Image
+import glob
 
 def get_coco_json_format():
     coco_format = {
@@ -34,8 +35,19 @@ def create_categories_format(category_dict):
     return category_list
 
 def create_annotations_format(data, image_id, category_id, annotation_id):
-    bbox = data[category_id]
-    
+    bbox = data[annotation_id][1]
+    keypoints = data[annotation_id][2]
+    annotations = {
+        "category_id": category_id, # The category to which the instance belongs
+        "num_keypoints": 5, # the number of marked points of the instance
+        "bbox": bbox, # location of detection box,format is x, y, w, h
+        # N*3 list of x, y, v.
+        "keypoints": keypoints,
+        "id": annotation_id, # the id of the instance, id cannot repeat
+        "image_id": image_id # The id of the image where the instance is located, repeatable. This represents the presence of multiple objects on a single image
+        #TODO: add "iscrowd": covered or not, when the value is 0, it will participate in training
+        #TODO: add "area": # the area occupied by the instance, can be simply taken as w * h. Note that when the value is 0, it will be skipped, and if it is too small, it will be ignored in eval
+    }
 
 def parse_labels(filetxt, img_width, img_height):
     
@@ -70,6 +82,26 @@ def parse_labels(filetxt, img_width, img_height):
         data.append(obj)
     return data
 
+# Label ids of the dataset
+category_ids = {
+    "person": 0,
+    "bicycle": 1,
+    "car": 2,
+    "motor": 3,
+    "license_plate":4,
+    "bus": 5,
+    "truck": 6,
+    "face": 7,
+    "motor_per": 8
+}
+
+def yolo2coco(imagefolder):
+    # This id will be automatically increased as we go
+    annotation_id = 0
+    image_id = 0
+    annotations = []
+    images = []
+    
 
         
         
