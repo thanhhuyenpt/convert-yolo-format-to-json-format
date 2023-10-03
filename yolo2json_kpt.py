@@ -102,6 +102,7 @@ def yolo2coco(imagefolder):
     annotations = []
     images = []
     
+    for kpt_img in glob.glob(imagefolder + )
 
         
         
