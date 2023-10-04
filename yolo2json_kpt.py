@@ -34,25 +34,26 @@ def create_categories_format(category_dict):
         category_list.append(category)
     return category_list
 
-def create_annotations_format(data, image_id, category_id, annotation_id):
-    bbox = data[annotation_id][1]
-    keypoints = data[annotation_id][2]
+def create_annotations_format(obj, image_id, category_id, annotation_id):
+    """
+        obj: [class_id, bbox, keypoints]  
+    """
+    bbox = obj[1] 
+    keypoints = obj[2]
     annotations = {
         "category_id": category_id, # The category to which the instance belongs
         "num_keypoints": 5, # the number of marked points of the instance
-        "bbox": bbox, # location of detection box,format is x, y, w, h
-        # N*3 list of x, y, v.
-        "keypoints": keypoints,
+        "bbox": bbox, # location of detection box,format is x_min, y_min, w, h
+        "keypoints": keypoints, # N*3 list of x, y, v.
         "id": annotation_id, # the id of the instance, id cannot repeat
         "image_id": image_id # The id of the image where the instance is located, repeatable. This represents the presence of multiple objects on a single image
         #TODO: add "iscrowd": covered or not, when the value is 0, it will participate in training
         #TODO: add "area": # the area occupied by the instance, can be simply taken as w * h. Note that when the value is 0, it will be skipped, and if it is too small, it will be ignored in eval
     }
+    return annotations
 
 def parse_labels(filetxt, img_width, img_height):
-    
     data = []
-    
     with open(filetxt, 'r') as f:
         lines = f.readlines()
     for line in lines:
@@ -97,7 +98,6 @@ category_ids = {
 
 def yolo2coco(imagefolder):
     # This id will be automatically increased as we go
-    annotation_id = 0
     image_id = 0
     annotations = []
     images = []
@@ -112,14 +112,28 @@ def yolo2coco(imagefolder):
         images.append(image)
         
         # label
-        # labelfile = kpt_img.replace("images", "labels").rsplit('.', 1)[0] + ".txt"
-        # data = parse_labels(labelfile, img_width, img_height)
-        # for i,obj in enumerate(data):
+        labelfile = kpt_img.replace("images", "labels").rsplit('.', 1)[0] + ".txt"
+        data = parse_labels(labelfile, img_width, img_height)
+        for i, obj in enumerate(data):
+            annotation_id = i
+            category_id = obj[0]
+            annotation = create_annotations_format(obj, image_id, category_id, annotation_id)
+            annotations.append(annotation)
         image_id += 1
+    return images, annotations
 
-    print(images)
+if __name__ == "__main__":
+    imagefolder = '/Users/thanhhuyen/Dev/yolo2json/dataset_kpt/images/'
 
-yolo2coco('/Users/thanhhuyen/Dev/yolo2json/dataset_kpt/images/')
+    # get coco json format
+    coco_format = get_coco_json_format()
+    coco_format["categories"] = create_categories_format(category_ids)
+    coco_format["images"], coco_format["annotations"] = yolo2coco(imagefolder)
+
+    with open('test.json', 'w') as f:
+        json.dump(coco_format, f)
+    
+    print("Converted yolo keypoint format to coco json format!")
         
         
             
