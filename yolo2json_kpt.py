@@ -64,8 +64,8 @@ def parse_labels(filetxt, img_width, img_height):
         y_center = float(line[2]) * img_height
         bbox_width = float(line[3]) * img_width
         bbox_height = float(line[4]) * img_height
-        x_min = x_center - bbox_width / 2
-        y_min = y_center - bbox_height / 2
+        x_min = max(x_center - bbox_width / 2, 0)
+        y_min = max(y_center - bbox_height / 2, 0)
         
         bbox = [x_min, y_min, bbox_width, bbox_height]
         
@@ -123,14 +123,14 @@ def yolo2coco(imagefolder):
     return images, annotations
 
 if __name__ == "__main__":
-    imagefolder = '/Users/thanhhuyen/Dev/yolo2json/dataset_kpt/images/'
+    imagefolder = '/home/thanhhuyen/Downloads/project/dataset/dataset_json/val/images/'
 
     # get coco json format
     coco_format = get_coco_json_format()
     coco_format["categories"] = create_categories_format(category_ids)
     coco_format["images"], coco_format["annotations"] = yolo2coco(imagefolder)
 
-    with open('test.json', 'w') as f:
+    with open('/home/thanhhuyen/Downloads/project/dataset/dataset_json/val_keypoints.json', 'w') as f:
         json.dump(coco_format, f)
     
     print("Converted yolo keypoint format to coco json format!")
