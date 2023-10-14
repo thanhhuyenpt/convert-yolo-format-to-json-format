@@ -1,2 +1,2 @@
 # yolo2json
-convert yolo keypoints format to JSON (coco) format
+convert yolo keypoints/detection format to JSON (coco) format
